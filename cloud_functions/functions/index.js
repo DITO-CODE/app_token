@@ -19,7 +19,7 @@ exports.createToken = functions.https.onRequest((request,response)=>{
 
     let {correo,token_id} = body;
 
-    if(!request.header.authorization){
+    if(!request.header("authorization")){
         response.status(500).send({error:true,msg:"Token id requerido."});
     }else{
         if(!correo){
@@ -59,7 +59,7 @@ exports.validateToken = functions.https.onRequest((request,response)=>{
 
     let {token,correo} = body;
 
-    if(!request.header.authorization){
+    if(!request.header("authorization")){
         response.status(500).send({error:true,msg:"Token id requerido."});
     }else{
         if(!correo){

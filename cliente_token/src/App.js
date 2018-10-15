@@ -18,20 +18,26 @@ class App extends Component {
 
     firebase.auth().signInWithEmailAndPassword(email, password).then((user)=>{
 
-      let token_id =   firebase.auth().currentUser.getIdToken();
-      debugger;
-      console.log(token_id);
-      var object = {
-        correo:email
-        }
+      firebase.auth().currentUser.getIdToken().then((result)=>{
+          let token_id = result;
 
-        axios.post('https://us-central1-ditocodeexamples.cloudfunctions.net/createToken',
-        object,{ headers: {'authorization': `${token_id}`}}
-      ).then((response)=>{
-        console.log(response.data);
-      }).catch((error)=>{
-        console.log(error);
-      })
+        
+          var object = {
+              correo:email
+            }
+
+            console.log(token_id);
+
+            axios.post('https://us-central1-ditocodeexamples.cloudfunctions.net/createToken',
+            object,{ headers: {'authorization': `${token_id}`}}
+          ).then((response)=>{
+            console.log(response.data);
+          }).catch((error)=>{
+            console.log(error);
+          })
+        
+      });
+      
     }).catch((error)=>{
 
       var errorCode = error.code;
