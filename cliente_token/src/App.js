@@ -21,6 +21,7 @@ class App extends Component {
       firebase.auth().currentUser.getIdToken().then((result)=>{
           let token_id = result;
 
+          this.setState({messageError:result});
         
           var object = {
               correo:email
@@ -28,6 +29,7 @@ class App extends Component {
 
             console.log(token_id);
 
+        
             axios.post('https://us-central1-ditocodeexamples.cloudfunctions.net/createToken',
             object,{ headers: {'authorization': `${token_id}`}}
           ).then((response)=>{

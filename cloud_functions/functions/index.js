@@ -19,13 +19,15 @@ exports.createToken = functions.https.onRequest((request,response)=>{
 
     let {correo,token_id} = body;
 
-    if(!request.header("authorization")){
+    if(!request.get("authorization")){
         response.status(500).send({error:true,msg:"Token id requerido."});
     }else{
+        console.log(request.get("authorization"));
         if(!correo){
             response.status(500).send({error:true,msg:"Correo requerido."});
         }else{
-            admin.auth().verifyIdToken(request.header.authorization).then((decode)=>{
+            let id_token = request.get("authorization");
+            admin.auth().verifyIdToken(id_token).then((decode)=>{
                 //Crea un random de 6 números
                 //Si deseas uno de 5
                 //Math.floor(Math.random()*90000) + 10000;
@@ -33,13 +35,14 @@ exports.createToken = functions.https.onRequest((request,response)=>{
 
                 //Guarda la información en la base de firebase
                 admin.database().ref(`/token/${correo}`).set({token:random}).then(()=>{
-                    res.status(200).send({error:false,token:random});
+                    response.status(200).send({error:false,token:random});
                 }).catch((error)=>{
-                    res.status(403).send({error:true,msg:"Ocurrio algo inesperado vuelve a intentarlo."});
+                    response.status(403).send({error:true,msg:"Ocurrio algo inesperado vuelve a intentarlo."});
                 })
                 
             }).catch((error)=>{
-                res.status(403).send({error:true,msg:"Sin autorizacion"});
+                console.log(error);
+                response.status(403).send({error:true,msg:"Sin autorizacion"});
             });
         }
     }
@@ -59,13 +62,13 @@ exports.validateToken = functions.https.onRequest((request,response)=>{
 
     let {token,correo} = body;
 
-    if(!request.header("authorization")){
+    if(!request.get("authorization")){
         response.status(500).send({error:true,msg:"Token id requerido."});
     }else{
         if(!correo){
             response.status(500).send({error:true,msg:"Correo requerido."});
         }else{
-            admin.auth().verifyIdToken(token_id).then((decode)=>{
+            admin.auth().verifyIdToken(request.get("authorization")).then((decode)=>{
 
                 let ref =  admin.database().ref(`/token/${correo}/${token}`);
                 //Lee la informacion
@@ -73,21 +76,21 @@ exports.validateToken = functions.https.onRequest((request,response)=>{
                     if(snapshot.val()){
                         //Eliminamos la información de la base de datos.
                         ref.remove().then(()=>{
-                            res.status(200).send({error:false});
+                            response.status(200).send({error:false});
                         }).catch((error)=>{
-                            res.status(403).send({error:true,msg:"Ocurrio algo inesperado vuelve a intentarlo."});
+                            response.status(403).send({error:true,msg:"Ocurrio algo inesperado vuelve a intentarlo."});
                         });
 
                     }else{
-                        res.status(404).send({error:true,msg:"Token Incorrecto."});
+                        response.status(404).send({error:true,msg:"Token Incorrecto."});
                     }
                     
                 }).catch((error)=>{
-                    res.status(403).send({error:true,msg:"Ocurrio algo inesperado vuelve a intentarlo."});
+                    response.status(403).send({error:true,msg:"Ocurrio algo inesperado vuelve a intentarlo."});
                 });
                 
             }).catch((error)=>{
-                res.status(403).send({error:true,msg:"Sin autorizacion"});
+                response.status(403).send({error:true,msg:"Sin autorizacion"});
             });
         }
     }
